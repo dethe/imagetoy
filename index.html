@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Image Toy</title>
+    <style>
+        input{
+            width: 800px;
+        }
+        button{
+            background-color: green;
+            color: white;
+            width: 300px;
+            height: 90px;
+            border: 3px outset #CCC;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+	<h1>Image Toy</h1>
+    <canvas width="1024" height="1024"></canvas>
+    <p>Write functions to calculate the RGB of each pixel</p>
+    <p>Your function has access to the following:
+        <ul>
+            <li>ca (= canvas element)</li>
+            <li>cx (= context object)</li>
+            <li>ci (= image data (pixels))</li>
+            <li>x</li>
+            <li>y</li>
+            <li>w (=1024)</li>
+            <li>h (=1024)</li>
+            <li>TAU (=PI*2)</li>
+            <li>t (=# of frames that have been run</li>
+            <li>Any method or property of Math, without needing the Math namespace</li>
+        </ul>
+        Each function should return a number between 0 and 255.
+    </p>
+    <p>
+        Function for red: <input class="red" />
+    </p>
+    <p>
+        Function for green: <input class="green" />
+    </p>
+    <p>
+        Function for blue: <input class="blue" />
+    </p>
+    <button class="run">Run</button>
+    <script>
+        var E = Math.E;
+        var LN10 = Math.LN10;
+        var LN2 = Math.LN2;
+        var LOG10E = Math.LOG10E;
+        var PI = Math.PI;
+        var TAU = Math.PI * 2;
+        var SQRT1_2 = Math.SQRT1_2;
+        var SQRT2 = Math.SQRT2;
+        var abs = Math.abs;
+        var acos = Math.acos;
+        var asin = Math.asin;
+        var atan = Math.atan;
+        var atan2 = Math.atan2;
+        var ceil = Math.ceil;
+        var cos = Math.cos;
+        var exp = Math.exp;
+        var floor = Math.floor;
+        var log = Math.log;
+        var max = Math.max;
+        var min = Math.min;
+        var pow = Math.pow;
+        var random = Math.random;
+        var round = Math.round;
+        var sin = Math.sin;
+        var sqrt = Math.sqrt;
+        var tan = Math.tan;
+        var w = 1024;
+        var h = 1024;
+        var ca = qs('canvas');
+        var cx = ca.getContext('2d');
+        var ci = cx.getImageData(0,0,w,h);
+        var cd = ci.data;
+
+        function qs(sel){
+            return document.body.querySelector(sel);
+        };
+
+        function onRun(evt){
+            console.log('running');
+            var redText = qs('.red').value;
+            var redFunc = new Function('x,y,t',redText);
+            var greenText = qs('.green').value;
+            var greenFunc = new Function('x,y,t',greenText);
+            var blueText = qs('.blue').value;
+            var blueFunc = new Function('x,y,t',blueText);
+            var red, green, blue, idx;
+            var alpha = 255;
+            var t = 0;
+            for (var y = 0; y < h; y++){
+                for (var x = 0; x < w; x++){
+                    red = redFunc(x,y,t);
+                    green = greenFunc(x,y,t);
+                    blue = blueFunc(x,y,t);
+                    idx = y * w * 4 + x * 4;
+                    cd[idx] = red;
+                    cd[idx+1] = green;
+                    cd[idx+2] = blue;
+                    cd[idx+3] = alpha;
+                }
+            }
+            cx.putImageData(ci,0,0);
+        }
+
+        qs('.run').addEventListener('click', onRun, false);
+    </script>
+</body>
+</html>
