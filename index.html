@@ -29,7 +29,10 @@
                 <li>w (=1024)</li>
                 <li>h (=1024)</li>
                 <li>TAU (=PI*2)</li>
-                <li>sq() (=returns square of number)</li>
+                <li>sq(n) (returns square of n)</li>
+                <li>n2(x,y) (returns 2D noise)</li>
+                <li>n3(x,y,z) (returns 3D noise)</li>
+                <li>n4(x,y,z,w) (returns 4D noise)</li>
                 <li>t (=# of frames that have been run</li>
                 <li>Any method or property of Math, without needing the Math namespace</li>
             </ul>
@@ -45,7 +48,12 @@
             Function for blue: <input class="blue" value="if(!(x%179)){return 255}else if(!(y%179)){return 255}else{return 0}" />
         </p>
         <button class="run">Run</button>
+        <ul>
+            Examples
+            <li><a href="https://dethe.github.io/imagetoy/#return%20cos%28x%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20cos%28y%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20%28%20cos%28x%2F%28PI%20*%204%29%29%20%2B%20sin%28y%2F%28PI*4%29%29%20%2B%202%29%20*%2064">Blur-o-vision</a></li>
+        </ul>
     </div>
+    <script src="simplex.js"></script><!-- noise implementation -->
     <script>
         var E = Math.E;
         var LN10 = Math.LN10;
@@ -80,6 +88,10 @@
         var cx = ca.getContext('2d');
         var ci = cx.getImageData(0,0,w,h);
         var cd = ci.data;
+        var simplex = new SimplexNoise();
+        var n2 = function(x,y){ return simplex.noise(x,y); }
+        var n3 = function(x,y,z){ return simplex.noise(x,y,z); }
+        var n4 = function(x,y,z,w){ return simplex.noise(x,y,z,w); }
 
         function qs(sel){
             return document.body.querySelector(sel);
