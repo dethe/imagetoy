@@ -20,32 +20,32 @@
 <body>
 	<h1>Image Toy</h1>
     <canvas width="1024" height="1024"></canvas>
-    <p>Write functions to calculate the RGB of each pixel</p>
-    <p>Your function has access to the following:
-        <ul>
-            <li>ca (= canvas element)</li>
-            <li>cx (= context object)</li>
-            <li>ci (= image data (pixels))</li>
-            <li>x</li>
-            <li>y</li>
-            <li>w (=1024)</li>
-            <li>h (=1024)</li>
-            <li>TAU (=PI*2)</li>
-            <li>t (=# of frames that have been run</li>
-            <li>Any method or property of Math, without needing the Math namespace</li>
-        </ul>
-        Each function should return a number between 0 and 255.
-    </p>
-    <p>
-        Function for red: <input class="red" />
-    </p>
-    <p>
-        Function for green: <input class="green" />
-    </p>
-    <p>
-        Function for blue: <input class="blue" />
-    </p>
-    <button class="run">Run</button>
+    <div class="controls">
+        <p>Write functions to calculate the RGB of each pixel</p>
+        <p>Your function has access to the following:
+            <ul>
+                <li>x</li>
+                <li>y</li>
+                <li>w (=1024)</li>
+                <li>h (=1024)</li>
+                <li>TAU (=PI*2)</li>
+                <li>sq() (=returns square of number)</li>
+                <li>t (=# of frames that have been run</li>
+                <li>Any method or property of Math, without needing the Math namespace</li>
+            </ul>
+            Each function should return a number between 0 and 255.
+        </p>
+        <p>
+            Function for red: <input class="red" value="if(!(x%73)){return 255}else if(!(y%73)){return 255}else{return 0}" />
+        </p>
+        <p>
+            Function for green: <input class="green" value="if(!(x%127)){return 255}else if(!(y%127)){return 255}else{return 0}" />
+        </p>
+        <p>
+            Function for blue: <input class="blue" value="if(!(x%179)){return 255}else if(!(y%179)){return 255}else{return 0}" />
+        </p>
+        <button class="run">Run</button>
+    </div>
     <script>
         var E = Math.E;
         var LN10 = Math.LN10;
@@ -68,6 +68,7 @@
         var max = Math.max;
         var min = Math.min;
         var pow = Math.pow;
+        var sq = function(x){ return x * x; };
         var random = Math.random;
         var round = Math.round;
         var sin = Math.sin;
@@ -84,6 +85,25 @@
             return document.body.querySelector(sel);
         };
 
+        function setHash(r,g,b){
+            var sep = '💋';
+            location.hash = '#' + encodeURIComponent(r + sep + g + sep + b);
+        }
+
+        var lastHash = '';
+
+        function parseHash(){
+            if (location.hash && location.hash !== lastHash){
+                lastHash = location.hash;
+                var code = decodeURIComponent(location.hash.slice(1)).split('💋');
+                if (code.length === 3){
+                    qs('.red').value = code[0];
+                    qs('.green').value = code[1];
+                    qs('.blue').value = code[2];
+                }
+            }
+        }
+
         function onRun(evt){
             console.log('running');
             var redText = qs('.red').value;
@@ -92,6 +112,7 @@
             var greenFunc = new Function('x,y,t',greenText);
             var blueText = qs('.blue').value;
             var blueFunc = new Function('x,y,t',blueText);
+            setHash(redText, greenText, blueText);
             var red, green, blue, idx;
             var alpha = 255;
             var t = 0;
@@ -109,8 +130,9 @@
             }
             cx.putImageData(ci,0,0);
         }
-
+        parseHash();
         qs('.run').addEventListener('click', onRun, false);
+        onRun();
     </script>
 </body>
 </html>
