@@ -15,19 +15,28 @@
             border: 3px outset #CCC;
             border-radius: 5px;
         }
+        canvas{
+            position: absolute;
+            left: 300px;
+        }
+        .controls{
+            position: absolute;
+            left: 0;
+            width: 300px;
+        }
     </style>
 </head>
 <body>
 	<h1>Image Toy</h1>
-    <canvas width="1024" height="1024"></canvas>
+    <canvas width="256" height="256"></canvas>
     <div class="controls">
         <p>Write functions to calculate the RGB of each pixel</p>
         <p>Your function has access to the following:
             <ul>
                 <li>x</li>
                 <li>y</li>
-                <li>w (=1024)</li>
-                <li>h (=1024)</li>
+                <li>w (=256)</li>
+                <li>h (=256)</li>
                 <li>TAU (=PI*2)</li>
                 <li>sq(n) (returns square of n)</li>
                 <li>n2(x,y) (returns 2D noise)</li>
@@ -39,18 +48,20 @@
             Each function should return a number between 0 and 255.
         </p>
         <p>
-            Function for red: <input class="red" value="if(!(x%73)){return 255}else if(!(y%73)){return 255}else{return 0}" />
+            Function for red: <input class="red" value="if(!(x % 73)){return 255}else if(!(y%73)){return 255}else{return 0}" />
         </p>
         <p>
-            Function for green: <input class="green" value="if(!(x%127)){return 255}else if(!(y%127)){return 255}else{return 0}" />
+            Function for green: <input class="green" value="if(!(x % 127)){return 255}else if(!(y%127)){return 255}else{return 0}" />
         </p>
         <p>
-            Function for blue: <input class="blue" value="if(!(x%179)){return 255}else if(!(y%179)){return 255}else{return 0}" />
+            Function for blue: <input class="blue" value="if(!(x % 179)){return 255}else if(!(y%179)){return 255}else{return 0}"/>
         </p>
         <button class="run">Run</button>
         <ul>
             Examples
-            <li><a href="https://dethe.github.io/imagetoy/#return%20cos%28x%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20cos%28y%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20%28%20cos%28x%2F%28PI%20*%204%29%29%20%2B%20sin%28y%2F%28PI*4%29%29%20%2B%202%29%20*%2064">Blur-o-vision</a></li>
+            <li><a href="#return%20cos%28x%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20cos%28y%2F%28PI*8%29%29%20*%20255%3B%F0%9F%92%8Breturn%20%28%20cos%28x%2F%28PI%20*%204%29%29%20%2B%20sin%28y%2F%28PI*4%29%29%20%2B%202%29%20*%2064">Blur-o-vision</a></li>
+            <li><a href="#return%20n2%28y%2F50%2Cx%2F50%29%20*%20255%F0%9F%92%8Breturn%20n2%28x%2F100%2Cy%2F100%29%20*%20255%F0%9F%92%8Breturn%20%28%20cos%28x%2F%28PI%20*%204%29%29%20%2B%20sin%28y%2F%28PI*4%29%29%20%2B%202%29%20*%2064">Noise</a></li>
+            <li><a href="#return%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F359%2Cx%2F359%2Ct%2F50))%20*%20255%F0%9F%92%8Breturn%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F479%2Cx%2F479%2Ct%2F50))%20*%20255%F0%9F%92%8Breturn%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F613%2Cx%2F613%2Ct%2F50))%20*%20255">Animated Noise</a></li>
         </ul>
     </div>
     <script src="simplex.js"></script><!-- noise implementation -->
@@ -82,16 +93,16 @@
         var sin = Math.sin;
         var sqrt = Math.sqrt;
         var tan = Math.tan;
-        var w = 1024;
-        var h = 1024;
+        var w = 256;
+        var h = 256;
         var ca = qs('canvas');
         var cx = ca.getContext('2d');
         var ci = cx.getImageData(0,0,w,h);
         var cd = ci.data;
         var simplex = new SimplexNoise();
         var n2 = function(x,y){ return simplex.noise(x,y); }
-        var n3 = function(x,y,z){ return simplex.noise(x,y,z); }
-        var n4 = function(x,y,z,w){ return simplex.noise(x,y,z,w); }
+        var n3 = function(x,y,z){ return simplex.noise3d(x,y,z); }
+        var n4 = function(x,y,z,w){ return simplex.noise4d(x,y,z,w); }
 
         function qs(sel){
             return document.body.querySelector(sel);
@@ -128,23 +139,27 @@
             var red, green, blue, idx;
             var alpha = 255;
             var t = 0;
-            for (var y = 0; y < h; y++){
-                for (var x = 0; x < w; x++){
-                    red = redFunc(x,y,t);
-                    green = greenFunc(x,y,t);
-                    blue = blueFunc(x,y,t);
-                    idx = y * w * 4 + x * 4;
-                    cd[idx] = red;
-                    cd[idx+1] = green;
-                    cd[idx+2] = blue;
-                    cd[idx+3] = alpha;
+            function eachFrame(){
+                t++;
+                for (var y = 0; y < h; y++){
+                    for (var x = 0; x < w; x++){
+                        red = redFunc(x,y,t);
+                        green = greenFunc(x,y,t);
+                        blue = blueFunc(x,y,t);
+                        idx = y * w * 4 + x * 4;
+                        cd[idx] = red;
+                        cd[idx+1] = green;
+                        cd[idx+2] = blue;
+                        cd[idx+3] = alpha;
+                    }
                 }
+                cx.putImageData(ci,0,0);
+                requestAnimationFrame(eachFrame);
             }
-            cx.putImageData(ci,0,0);
+            eachFrame();
         }
         parseHash();
         qs('.run').addEventListener('click', onRun, false);
-        onRun();
     </script>
 </body>
 </html>
