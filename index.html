@@ -17,11 +17,11 @@
         }
         canvas{
             position: absolute;
-            left: 300px;
+            left: 340px;
         }
         .controls{
             position: absolute;
-            left: 0;
+            left: 20px;
             width: 300px;
         }
     </style>
@@ -108,8 +108,11 @@
             return document.body.querySelector(sel);
         };
 
-        function setHash(r,g,b){
+        function setHash(){
             var sep = '💋';
+            var r = qs('.red').value;
+            var g = qs('.green').value;
+            var b = qs('.blue').value;
             location.hash = '#' + encodeURIComponent(r + sep + g + sep + b);
         }
 
@@ -135,7 +138,6 @@
             var greenFunc = new Function('x,y,t',greenText);
             var blueText = qs('.blue').value;
             var blueFunc = new Function('x,y,t',blueText);
-            setHash(redText, greenText, blueText);
             var red, green, blue, idx;
             var alpha = 255;
             var t = 0;
@@ -154,12 +156,18 @@
                     }
                 }
                 cx.putImageData(ci,0,0);
-                requestAnimationFrame(eachFrame);
+                if (location.hash && location.hash !== lastHash){
+                    parseHash();
+                    onRun();
+                }else{
+                    requestAnimationFrame(eachFrame);
+                }
             }
             eachFrame();
         }
         parseHash();
-        qs('.run').addEventListener('click', onRun, false);
+        qs('.run').addEventListener('click', setHash, false);
+        onRun();
     </script>
 </body>
 </html>
