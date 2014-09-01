@@ -24,6 +24,12 @@
             left: 20px;
             width: 300px;
         }
+        abbr{
+            text-decoration: underline;
+            text-decoration-line: dotted;
+            text-decoration-style: wavy;
+            text-decoration-color:  #0000FF;
+        }
     </style>
 </head>
 <body>
@@ -31,20 +37,35 @@
     <canvas width="256" height="256"></canvas>
     <div class="controls">
         <p>Write functions to calculate the RGB of each pixel</p>
-        <p>Your function has access to the following:
-            <ul>
-                <li>x</li>
-                <li>y</li>
-                <li>w (=256)</li>
-                <li>h (=256)</li>
-                <li>TAU (=PI*2)</li>
-                <li>sq(n) (returns square of n)</li>
-                <li>n2(x,y) (returns 2D noise)</li>
-                <li>n3(x,y,z) (returns 3D noise)</li>
-                <li>n4(x,y,z,w) (returns 4D noise)</li>
-                <li>t (=# of frames that have been run</li>
-                <li>Any method or property of Math, without needing the Math namespace</li>
-            </ul>
+        <p>Your function has access to the following variables:
+            <abbr title="horizontal position of the current pixel">x</abbr>,
+            <abbr title="vertical position of the current pixel">y</abbr>,
+            <abbr title="width of the canvas in pixels">w</abbr>,
+            <abbr title="height of the canvas in pixels">h</abbr>,
+            <abbr title="horizontal center of the canvas in pixels">cx</abbr>,
+            <abbr title="vertical center of the canvas in pixels">cy</abbr>,
+            <abbr title="Frame count (proxy for time)">t</abbr>,
+            <abbr title="ratio of the radius of a circle to its circumference">PI</abbr>,
+            <abbr title="PI times 2">TAU</abbr>,
+            <abbr title="PI divided by 2">PI1_2</abbr>,
+            <abbr title="PI divided by 3">PI1_3</abbr>,
+            <abbr title="Euler's constant and the base of natural logarithms, approximately 2.718">E</abbr>,
+            <abbr title="Natural logarithm of 2, approximately 0.693">LN2</abbr>,
+            <abbr title="Natural logarithm of 10, approximately 2.303">LN10</abbr>,
+            <abbr title="Base 2 logarithm of E, approximately 1.443">LOG2E</abbr>,
+            <abbr title="Base 10 logarithm of E, approximately 0.434">LOG10E</abbr>,
+            <abbr title="Square root of 1/2; equivalently, 1 over the square root of 2, approximately 0.707">SQRT1_2</abbr>,
+            <abbr title="Square root of 2, approximately 1.414">SQRT2</abbr>
+        </p>
+        <p>Your functions also have access to the following functions:
+            <abbr title="Returns the square of n">sq(n)</abbr>,
+            <abbr title="Returns a float from 0.0 to 1.0 of 2D noise">n2(x,y)</abbr>,
+            <abbr title="Returns a float from 0.0 to 1.0 of 3D noise">n3(x,y,z)</abbr>,
+            <abbr title="Returns a float from 0.0 to 1.0 of 4D noise">n4(x,y,z,w)</abbr>,
+            <abbr title="Returns the absolute value of a number">abs(n)</abbr>,
+            <abbr title="Returns the arccosine of a number">acos(n)</abbr>,
+        </p>
+        <p>
             Each function should return a number between 0 and 255.
         </p>
         <p>
@@ -63,6 +84,7 @@
             <li><a href="#return%20n2%28y%2F50%2Cx%2F50%29%20*%20255%F0%9F%92%8Breturn%20n2%28x%2F100%2Cy%2F100%29%20*%20255%F0%9F%92%8Breturn%20%28%20cos%28x%2F%28PI%20*%204%29%29%20%2B%20sin%28y%2F%28PI*4%29%29%20%2B%202%29%20*%2064">Noise</a></li>
             <li><a href="#return%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F359%2Cx%2F359%2Ct%2F50))%20*%20255%F0%9F%92%8Breturn%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F479%2Cx%2F479%2Ct%2F50))%20*%20255%F0%9F%92%8Breturn%20n3(y%2F100%2Cx%2F100%2C20*n3(y%2F613%2Cx%2F613%2Ct%2F50))%20*%20255">Animated Noise</a></li>
         </ul>
+        <p>Inspired by this Code Golf post: <a href="https://codegolf.stackexchange.com/questions/35569/tweetable-mathematical-art">Tweetable Mathematical Art</a>.</p>
     </div>
     <script src="simplex.js"></script><!-- noise implementation -->
     <script>
@@ -71,6 +93,8 @@
         var LN2 = Math.LN2;
         var LOG10E = Math.LOG10E;
         var PI = Math.PI;
+        var PI1_2 = PI / 2;
+        var PI1_3 = PI / 3;
         var TAU = Math.PI * 2;
         var SQRT1_2 = Math.SQRT1_2;
         var SQRT2 = Math.SQRT2;
@@ -93,11 +117,14 @@
         var sin = Math.sin;
         var sqrt = Math.sqrt;
         var tan = Math.tan;
-        var w = 256;
-        var h = 256;
+        var w = +qs('canvas').getAttribute('width');
+        var h = +qs('canvas').getAttribute('height');
+        var cx = w/2;
+        var cy = h/2;
+        var dist = function(x1,y1,x2,y2){return sqrt(sq(x2-x1)+sq(y2-y1)); };
         var ca = qs('canvas');
-        var cx = ca.getContext('2d');
-        var ci = cx.getImageData(0,0,w,h);
+        var ctx = ca.getContext('2d');
+        var ci = ctx.getImageData(0,0,w,h);
         var cd = ci.data;
         var simplex = new SimplexNoise();
         var n2 = function(x,y){ return simplex.noise(x,y); }
@@ -155,7 +182,7 @@
                         cd[idx+3] = alpha;
                     }
                 }
-                cx.putImageData(ci,0,0);
+                ctx.putImageData(ci,0,0);
                 if (location.hash && location.hash !== lastHash){
                     parseHash();
                     onRun();

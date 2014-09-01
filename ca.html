@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Cellular Automata Explorer</title>
+    <style>
+        input{
+            width: 200px;
+        }
+        button{
+            background-color: green;
+            color: white;
+            width: 300px;
+            height: 90px;
+            border: 3px outset #CCC;
+            border-radius: 5px;
+        }
+        canvas{
+            position: absolute;
+            left: 340px;
+        }
+        .controls{
+            position: absolute;
+            left: 20px;
+            width: 300px;
+        }
+        abbr{
+            text-decoration: underline;
+            text-decoration-line: dotted;
+            text-decoration-style: wavy;
+            text-decoration-color:  #0000FF;
+        }
+    </style>
+</head>
+<body>
+	<h1>Cellular Automata Explorer</h1>
+    <canvas width="256" height="256"></canvas>
+    <div class="controls">
+        <p>Pick a Rule (0 to 255)</p>
+        <p>
+            Rule: <input class="rule" value="90" />
+        </p>
+        <button class="run">Run</button>
+    </div>
+    <script>
+        function initialState(){
+            var row = [];
+            for (var i = 0; i < 256; i++){
+                if (i === 128){
+                    row.push(1);
+                }else{
+                    row.push(0);
+                }
+            }
+            return row;
+        }
+        function randomState(){
+            var row = [];
+            for (var i = 0; i < 256; i++){
+                if (Math.random() < 0.5){
+                    row.push(1);
+                }else{
+                    row.push(0);
+                }
+            }
+            return row;
+        }
+        var w = +qs('canvas').getAttribute('width');
+        var h = +qs('canvas').getAttribute('height');
+        var ca = qs('canvas');
+        var ctx = ca.getContext('2d');
+        var ci = ctx.getImageData(0,0,w,h);
+        var cd = ci.data;
+
+        function qs(sel){
+            return document.body.querySelector(sel);
+        };
+
+        // neighbours as a wrap-around rule
+        function neighboursWrap(list, idx){
+            var nbrs = [];
+            if (idx === 0){
+                nbrs.push(list[list.length - 1]);
+            }else{
+                nbrs.push(list[idx-1]);
+            }
+            nbrs.push(list[idx]);
+            if (idx === (list.length -1)){
+                nbrs.push(list[0]);
+            }else{
+                nbrs.push(list[idx+1]);
+            }
+            if (nbrs.length !== 3){
+                throw new Exception('This should not happen either');
+            }
+            return nbrs;
+        }
+
+        function listToInt(list){
+            return parseInt(list.join(''), 2);
+        }
+
+        function ruleToList(rule){
+            var list = rule.toString(2).split('').map(function(n){ return +n; });
+            while (list.length < 8){
+                list.unshift(0);
+            }
+            list.reverse();
+            return list;
+        }
+
+        var rule;
+
+        function applyRule(item, idx, list){
+            var ruleIdx = listToInt(neighboursWrap(list, idx));
+            if (ruleIdx > 7){
+                throw new Exception('That should not happen');
+            }
+            return rule[ruleIdx];
+        }
+
+
+        function onRun(evt){
+            console.log('running');
+            var idx, x, y;
+            var row = randomState();
+            rule = ruleToList(+ qs('.rule').value);
+            console.log('rule: %o', rule);
+            for (y = 0; y < h; y++){
+                for (x = 0; x < w; x++){
+                    idx = y * w * 4 + x * 4;
+                    if (row[x]){
+                        cd[idx] = 0;
+                        cd[idx+1] = 0;
+                        cd[idx+2] = 0;
+                    }else{
+                        cd[idx] = 255;
+                        cd[idx+1] = 255;
+                        cd[idx+2] = 255;
+                    }
+                    cd[idx+3] = 255;
+                }
+                row = row.map(applyRule);
+            }
+            ctx.putImageData(ci,0,0);
+        }
+        qs('.run').addEventListener('click', onRun, false);
+        // onRun();
+
+        function frame(){
+            var value = 1 + parseInt(qs('.rule').value, 10);
+            qs('.rule').value = value;
+            if (value < 256){
+                onRun();
+                setTimeout(frame, 1000);
+            }
+        }
+        qs('.rule').value = 0;
+        frame();
+    </script>
+</body>
+</html>
